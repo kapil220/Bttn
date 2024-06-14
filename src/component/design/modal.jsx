@@ -1,6 +1,21 @@
-import FileUpload from "./fileupload";
+import React from "react";
+import FileUpload from "../design/fileupload";
 
 function Modal() {
+  const showModal = () => {
+    const modal = document.getElementById("my_modal_1");
+    if (modal) {
+      modal.showModal();
+    }
+  };
+
+  const closeModal = () => {
+    const modal = document.getElementById("my_modal_1");
+    if (modal) {
+      modal.close();
+    }
+  };
+
   return (
     <div>
       {/* Open the modal using document.getElementById('ID').showModal() method */}
