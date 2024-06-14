@@ -7,12 +7,12 @@ function App() {
   return (
     <div>
       <Navbar />
-      <div class="grid grid-cols-5 gap-4">
-        <div>
+      <div class="grid grid-rows-3 grid-flow-col gap-4 space-y-5 -space-x-5  bg-indigo-100">
+        <div className="row-span-3">
           <Sidebar />
         </div>
 
-        <div class="col-span-4 ">
+        <div class="col-span-10 content-center">
           <Dashbord />
         </div>
       </div>
