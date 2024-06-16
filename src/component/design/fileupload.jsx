@@ -1,47 +1,130 @@
 import React, { useState } from "react";
 import drag from "../../assets/drag.png";
+import { saveFile } from "../../../indexDB";
 
 const FileUpload = () => {
   const [files, setFiles] = useState([]);
   const [progress, setProgress] = useState({});
   const [uploaded, setUploaded] = useState({});
+  const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files).slice(0, 10);
-    setFiles(newFiles);
-    newFiles.forEach((file, index) => uploadFile(file, index));
+  const supportedFormats = [
+    "application/pdf",
+    "application/msword",
+    "image/png",
+    "image/jpeg",
+  ];
+  const maxFileSize = 50 * 1024 * 1024; // 50MB
+
+  const handleFileChange = async (e) => {
+    const newFiles = Array.from(e.target.files);
+    const validFiles = validateFiles(newFiles);
+
+    if (validFiles.length > 0 && !uploading) {
+      setUploading(true);
+      setLoading(true);
+      await uploadFiles(validFiles);
+      setUploading(false);
+      setLoading(false);
+    }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
-    const droppedFiles = Array.from(e.dataTransfer.files).slice(0, 10);
-    setFiles(droppedFiles);
-    droppedFiles.forEach((file, index) => uploadFile(file, index));
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    const validFiles = validateFiles(droppedFiles);
+
+    if (validFiles.length > 0 && !uploading) {
+      setUploading(true);
+      setLoading(true);
+      await uploadFiles(validFiles);
+      setUploading(false);
+      setLoading(false);
+    }
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
   };
 
-  const uploadFile = (file, index) => {
+  const validateFiles = (fileList) => {
+    const validFiles = fileList.filter((file) => {
+      if (!supportedFormats.includes(file.type)) {
+        setError(
+          "We currently support PDF, DOC, PNG, and JPEG formats. You can upload up to 10 files at once, each up to 50MB."
+        );
+        return false;
+      }
+      if (file.size > maxFileSize) {
+        setError(
+          "We currently support PDF, DOC, PNG, and JPEG formats. You can upload up to 10 files at once, each up to 50MB."
+        );
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length > 10) {
+      setError("You can upload up to 10 files at once.");
+      return [];
+    }
+
+    if (validFiles.length === 0) {
+      setError(
+        "We currently support PDF, DOC, PNG, and JPEG formats. You can upload up to 10 files at once, each up to 50MB."
+      );
+    } else {
+      setError("");
+    }
+
+    return validFiles;
+  };
+
+  const uploadFiles = async (files) => {
+    for (let file of files) {
+      await uploadFile(file);
+    }
+  };
+
+  const uploadFile = async (file) => {
     const uploadProgress = {};
     uploadProgress[file.name] = 0;
     setProgress((prevProgress) => ({ ...prevProgress, ...uploadProgress }));
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setProgress((prevProgress) => {
-        const newProgress = prevProgress[file.name] + 10;
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setUploaded((prevUploaded) => ({
-            ...prevUploaded,
-            [file.name]: true,
-          }));
-        }
-        return { ...prevProgress, [file.name]: newProgress };
+    const simulateUpload = () => {
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          setProgress((prevProgress) => {
+            const newProgress = prevProgress[file.name] + 10;
+            if (newProgress >= 100) {
+              clearInterval(interval);
+              resolve();
+            }
+            return { ...prevProgress, [file.name]: newProgress };
+          });
+        }, 300);
       });
-    }, 300);
+    };
+
+    await simulateUpload();
+    await saveFile(file);
+    setUploaded((prevUploaded) => ({
+      ...prevUploaded,
+      [file.name]: true,
+    }));
+    setFiles((prevFiles) => [
+      ...prevFiles,
+      {
+        file,
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2) + " MB",
+        date: new Date(file.lastModified).toLocaleDateString(),
+        uploadedBy: "",
+        recordLabel: "",
+      },
+    ]);
   };
 
   return (
@@ -56,14 +139,14 @@ const FileUpload = () => {
           className="hidden file-input w-full max-w-xs"
           onChange={handleFileChange}
           multiple
-          accept="image/*"
+          accept="image/*,application/pdf,application/msword"
         />
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-5">
           <div className="flex justify-center items-center">
             <img
               src={drag}
               onClick={() => document.querySelector(".file-input").click()}
-              className="h-20 w-20 cursor-pointer"
+              className="h-16 w-16 cursor-pointer"
             />
           </div>
 
@@ -80,6 +163,10 @@ const FileUpload = () => {
         </div>
       </div>
 
+      {error && <div className="mt-4 text-red-500">{error}</div>}
+
+      {loading && <div className="mt-4 text-blue-500">Uploading...</div>}
+
       {files.length > 0 && (
         <div className="mt-4 w-full">
           {files.map((file, index) => (
@@ -87,7 +174,7 @@ const FileUpload = () => {
               <div className="flex items-center justify-between">
                 <span>{file.name}</span>
                 <span>
-                  {uploaded[file.name] ? (
+                  {uploaded[file.file.name] ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-6 w-6 text-green-500"
@@ -103,14 +190,14 @@ const FileUpload = () => {
                       />
                     </svg>
                   ) : (
-                    `${progress[file.name]}%`
+                    `${progress[file.file.name]}%`
                   )}
                 </span>
               </div>
               <div className="w-full bg-gray-200 h-2 rounded">
                 <div
                   className="bg-blue-600 h-2 rounded"
-                  style={{ width: `${progress[file.name]}%` }}
+                  style={{ width: `${progress[file.file.name]}%` }}
                 ></div>
               </div>
             </div>

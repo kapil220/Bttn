@@ -28,7 +28,7 @@ function Modal() {
 
       <dialog id="my_modal_1" className="modal ">
         <div className="modal-box">
-          <div className="grid gap-4">
+          <div className="grid gap-2">
             <div className="row-start-1">
               <div className="grid grid-cols-3 gap-4">
                 <div className="col-start-1">
