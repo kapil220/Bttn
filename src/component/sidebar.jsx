@@ -11,26 +11,21 @@ import salesdetails from "../assets/salesdetails.png";
 import logout from "../assets/logout.png";
 
 function Sidebar() {
+  const navbarHeight = 60;
   return (
     <div>
       <div className="drawer lg:drawer-open">
         <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content flex flex-col items-center justify-center">
           {/* Page content here */}
-          <label
-            htmlFor="my-drawer-2"
-            className="btn btn-primary drawer-button lg:hidden"
-          >
-            Open drawer
-          </label>
         </div>
-        <div className="drawer-side">
+        <div className="drawer-side" style={{ zIndex: "1050" }}>
           <label
             htmlFor="my-drawer-2"
             aria-label="close sidebar"
             className="drawer-overlay"
           ></label>
-          <ul className="menu p-4 w-80 min-h-full bg-base-200 text-base-content text-blue-950 font-medium text-xg">
+          <ul className="menu p-4 w-60 min-h-full bg-base-200 text-blue-950 font-medium text-xg">
             {/* Sidebar content here */}
             <div className="flex flex-col space-y-4">
               <li>
