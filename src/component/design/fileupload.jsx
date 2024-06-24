@@ -22,7 +22,7 @@ const FileUpload = () => {
     const newFiles = Array.from(e.target.files);
     const validFiles = validateFiles(newFiles);
 
-    if (validFiles.length > 0 && !uploading) {
+    if (validFiles.length > 0) {
       setUploading(true);
       setLoading(true);
       await uploadFiles(validFiles);
@@ -36,7 +36,7 @@ const FileUpload = () => {
     const droppedFiles = Array.from(e.dataTransfer.files);
     const validFiles = validateFiles(droppedFiles);
 
-    if (validFiles.length > 0 && !uploading) {
+    if (validFiles.length > 0) {
       setUploading(true);
       setLoading(true);
       await uploadFiles(validFiles);
@@ -83,9 +83,8 @@ const FileUpload = () => {
   };
 
   const uploadFiles = async (files) => {
-    for (let file of files) {
-      await uploadFile(file);
-    }
+    const uploadPromises = files.map((file) => uploadFile(file));
+    await Promise.all(uploadPromises);
   };
 
   const uploadFile = async (file) => {
@@ -95,16 +94,19 @@ const FileUpload = () => {
 
     const simulateUpload = () => {
       return new Promise((resolve) => {
+        const totalSize = file.size;
+        const incrementSize = totalSize / 100;
         const interval = setInterval(() => {
           setProgress((prevProgress) => {
-            const newProgress = prevProgress[file.name] + 10;
+            const currentProgress = prevProgress[file.name];
+            const newProgress = currentProgress + 1; // Increment by 1%
             if (newProgress >= 100) {
               clearInterval(interval);
               resolve();
             }
             return { ...prevProgress, [file.name]: newProgress };
           });
-        }, 300);
+        }, 100); // Adjust interval based on file size
       });
     };
 
