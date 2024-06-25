@@ -1,28 +1,13 @@
 import React, { useState, useEffect } from "react";
-import Modal from "./design/modal";
-import TableRows from "../component/design/tablerows";
-import { getFiles, deleteFile } from "../../indexDB"; // Adjust the import path
+import TableRows from "./tablerows"; // Adjust the path as necessary
+import Modal from "./modal"; // Ensure the path is correct
 
-function Dashboard() {
-  const [rowsData, setRowsData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+function Dashboard({ files, removeFile, addFile }) {
+  const [rowsData, setRowsData] = useState(files);
 
   useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        setLoading(true);
-        const storedFiles = await getFiles();
-        setRowsData(storedFiles);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFiles();
-  }, []);
+    setRowsData(files);
+  }, [files]);
 
   const handleChange = (index, event) => {
     const { name, value } = event.target;
@@ -34,31 +19,22 @@ function Dashboard() {
   const deleteTableRows = async (index) => {
     try {
       const fileToDelete = rowsData[index];
-      await deleteFile(fileToDelete.id); // Delete file from IndexedDB
+      await removeFile(fileToDelete.id);
       const updatedRows = rowsData.filter((row, i) => i !== index);
       setRowsData(updatedRows);
     } catch (err) {
-      setError(`Failed to delete record: ${err.message}`);
+      console.error(`Failed to delete record: ${err.message}`);
     }
   };
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="card w-100 bg-base-100 shadow-xl">
       <div className="card-body">
         <div className="flex justify-between">
           <div className="card-title">Account Records</div>
-          <Modal />
+          <Modal addFile={addFile} />
         </div>
         <hr />
-
         <div className="overflow-x-auto">
           <table className="table">
             <thead>

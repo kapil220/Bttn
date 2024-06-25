@@ -4,11 +4,17 @@ function TableRows({ rowsData, deleteTableRows, handleChange }) {
   return rowsData.map((data, index) => {
     const { id, name, file, uploadedBy, recordLabel } = data;
 
+    // Log the file object to inspect its structure
+    console.log("File object:", file);
+
+    // Check if the file object is valid
+    const fileURL = file instanceof Blob ? URL.createObjectURL(file) : "#";
+
     return (
       <tr key={id}>
         <td>
           <a
-            href={URL.createObjectURL(file)}
+            href={fileURL}
             download={name}
             target="_blank"
             rel="noopener noreferrer"
@@ -42,7 +48,7 @@ function TableRows({ rowsData, deleteTableRows, handleChange }) {
         <td>
           <button className="btn btn-outline btn-primary">
             <a
-              href={URL.createObjectURL(file)}
+              href={fileURL}
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: "table-cell" }}

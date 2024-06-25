@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import drag from "../../assets/drag.png";
-import { saveFile } from "../../../indexDB";
 
-const FileUpload = () => {
-  const [files, setFiles] = useState([]);
+const FileUpload = ({ addFile }) => {
   const [progress, setProgress] = useState({});
   const [uploaded, setUploaded] = useState({});
   const [error, setError] = useState("");
@@ -92,42 +90,42 @@ const FileUpload = () => {
     uploadProgress[file.name] = 0;
     setProgress((prevProgress) => ({ ...prevProgress, ...uploadProgress }));
 
+    // Add file to the list immediately
+    const newFile = {
+      id: file.name, // Use a unique identifier
+      file,
+      name: file.name.length > 30 ? `${file.name.slice(0, 30)}...` : file.name, // Limiting file name display
+      size: (file.size / 1024 / 1024).toFixed(2) + " MB",
+      date: new Date(file.lastModified).toLocaleDateString(),
+      uploadedBy: "",
+      recordLabel: "",
+    };
+    addFile(newFile); // Add file using the addFile prop
+
     const simulateUpload = () => {
       return new Promise((resolve) => {
         const totalSize = file.size;
-        const incrementSize = totalSize / 100;
+        const totalTime = totalSize / 1024; // Simulate 1 second per KB
+        const increment = totalTime / 100; // Calculate the time increment for each 1%
         const interval = setInterval(() => {
           setProgress((prevProgress) => {
-            const currentProgress = prevProgress[file.name];
-            const newProgress = currentProgress + 1; // Increment by 1%
-            if (newProgress >= 100) {
+            const currentProgress = prevProgress[file.name] || 0;
+            const newProgress = Math.min(currentProgress + 1, 100);
+            if (newProgress === 100) {
               clearInterval(interval);
+              setUploaded((prevUploaded) => ({
+                ...prevUploaded,
+                [file.name]: true,
+              }));
               resolve();
             }
             return { ...prevProgress, [file.name]: newProgress };
           });
-        }, 100); // Adjust interval based on file size
+        }, increment);
       });
     };
 
     await simulateUpload();
-    await saveFile(file);
-    setUploaded((prevUploaded) => ({
-      ...prevUploaded,
-      [file.name]: true,
-    }));
-    setFiles((prevFiles) => [
-      ...prevFiles,
-      {
-        file,
-        name:
-          file.name.length > 30 ? `${file.name.slice(0, 30)}...` : file.name, // Limiting file name display
-        size: (file.size / 1024 / 1024).toFixed(2) + " MB",
-        date: new Date(file.lastModified).toLocaleDateString(),
-        uploadedBy: "",
-        recordLabel: "",
-      },
-    ]);
   };
 
   return (
@@ -170,20 +168,21 @@ const FileUpload = () => {
 
       {loading && <div className="mt-4 text-blue-500">Uploading...</div>}
 
-      {files.length > 0 && (
+      {Object.keys(progress).length > 0 && (
         <div className="mt-4 w-full max-w-md overflow-hidden">
-          {files.map((file, index) => (
+          {Object.keys(progress).map((fileName, index) => (
             <div key={index} className="relative my-2 truncate">
               <div className="flex items-center justify-between">
-                <span className="truncate">{file.name}</span>
+                <span className="truncate">{fileName}</span>
                 <span>
-                  {uploaded[file.file.name] ? (
+                  {uploaded[fileName] ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-6 w-6 text-green-500"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      alt="File uploaded successfully"
                     >
                       <path
                         strokeLinecap="round"
@@ -193,14 +192,14 @@ const FileUpload = () => {
                       />
                     </svg>
                   ) : (
-                    `${progress[file.file.name]}%`
+                    `${progress[fileName] || 0}%`
                   )}
                 </span>
               </div>
               <div className="w-full bg-gray-200 h-2 rounded">
                 <div
                   className="bg-blue-600 h-2 rounded"
-                  style={{ width: `${progress[file.file.name]}%` }}
+                  style={{ width: `${progress[fileName] || 0}%` }}
                 ></div>
               </div>
             </div>
