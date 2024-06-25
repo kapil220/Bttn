@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, {
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import drag from "../../assets/drag.png";
 
-const FileUpload = ({ addFile }) => {
+const FileUpload = forwardRef(({ addFile }, ref) => {
   const [progress, setProgress] = useState({});
   const [uploaded, setUploaded] = useState({});
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const supportedFormats = [
     "application/pdf",
@@ -15,6 +21,20 @@ const FileUpload = ({ addFile }) => {
     "image/jpeg",
   ];
   const maxFileSize = 50 * 1024 * 1024; // 50MB
+
+  // Function to reset the file upload state
+  useImperativeHandle(ref, () => ({
+    resetFileUpload() {
+      setProgress({});
+      setUploaded({});
+      setError("");
+      setUploading(false);
+      setLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+  }));
 
   const handleFileChange = async (e) => {
     const newFiles = Array.from(e.target.files);
@@ -136,6 +156,7 @@ const FileUpload = ({ addFile }) => {
         onDragOver={handleDragOver}
       >
         <input
+          ref={fileInputRef}
           type="file"
           className="hidden file-input w-full max-w-xs"
           onChange={handleFileChange}
@@ -208,6 +229,6 @@ const FileUpload = ({ addFile }) => {
       )}
     </div>
   );
-};
+});
 
 export default FileUpload;

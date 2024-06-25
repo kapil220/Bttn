@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useRef } from "react";
 import FileUpload from "../design/fileupload"; // Adjust the path as necessary
 
 function Modal({ addFile }) {
+  const fileUploadRef = useRef();
+
   const showModal = () => {
     const modal = document.getElementById("my_modal_1");
     if (modal) {
@@ -13,6 +15,9 @@ function Modal({ addFile }) {
     const modal = document.getElementById("my_modal_1");
     if (modal) {
       modal.close();
+    }
+    if (fileUploadRef.current) {
+      fileUploadRef.current.resetFileUpload();
     }
   };
 
@@ -42,7 +47,7 @@ function Modal({ addFile }) {
             <hr />
             <div className="row-start-6">
               <div>
-                <FileUpload addFile={addFile} />
+                <FileUpload ref={fileUploadRef} addFile={addFile} />
                 <div className="text-center">
                   <p className="mt-4 text-sm text-gray-500">
                     We currently support PDF, DOC, PNG, and JPEG formats. You

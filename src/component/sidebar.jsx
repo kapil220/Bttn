@@ -1,3 +1,4 @@
+import React from "react";
 import catalogs from "../assets/catalogs.png";
 import shoppingslist from "../assets/shoppingslist.png";
 import bulkuploads from "../assets/bulkuploads.png";
@@ -10,12 +11,17 @@ import orders from "../assets/orders.png";
 import salesdetails from "../assets/salesdetails.png";
 import logout from "../assets/logout.png";
 
-function Sidebar() {
-  const navbarHeight = 60;
+function Sidebar({ isOpen, toggleSidebar }) {
   return (
     <div>
-      <div className="drawer lg:drawer-open">
-        <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
+      <div className={`drawer ${isOpen ? "drawer-open" : ""}`}>
+        <input
+          id="my-drawer-2"
+          type="checkbox"
+          className="drawer-toggle"
+          checked={isOpen}
+          readOnly
+        />
         <div className="drawer-content flex flex-col items-center justify-center">
           {/* Page content here */}
         </div>
@@ -24,6 +30,7 @@ function Sidebar() {
             htmlFor="my-drawer-2"
             aria-label="close sidebar"
             className="drawer-overlay"
+            onClick={toggleSidebar}
           ></label>
           <ul className="menu p-4 w-60 min-h-full bg-base-200 text-blue-950 font-medium text-xg">
             {/* Sidebar content here */}
