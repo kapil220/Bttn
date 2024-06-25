@@ -45,8 +45,11 @@ function Modal() {
             </div>
             <hr />
             <div className="row-start-6">
-              <div>
-                <FileUpload />
+              <div className="">
+                <div>
+                  <FileUpload />
+                </div>
+
                 <div className=" text-center">
                   <p className="mt-4 text-sm text-gray-500 ">
                     We currently support PDF, DOC, PNG, and JPEG formats. You

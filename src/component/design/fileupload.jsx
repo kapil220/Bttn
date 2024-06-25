@@ -120,7 +120,8 @@ const FileUpload = () => {
       ...prevFiles,
       {
         file,
-        name: file.name,
+        name:
+          file.name.length > 30 ? `${file.name.slice(0, 30)}...` : file.name, // Limiting file name display
         size: (file.size / 1024 / 1024).toFixed(2) + " MB",
         date: new Date(file.lastModified).toLocaleDateString(),
         uploadedBy: "",
@@ -170,11 +171,11 @@ const FileUpload = () => {
       {loading && <div className="mt-4 text-blue-500">Uploading...</div>}
 
       {files.length > 0 && (
-        <div className="mt-4 w-full">
+        <div className="mt-4 w-full max-w-md overflow-hidden">
           {files.map((file, index) => (
-            <div key={index} className="relative my-2">
+            <div key={index} className="relative my-2 truncate">
               <div className="flex items-center justify-between">
-                <span>{file.name}</span>
+                <span className="truncate">{file.name}</span>
                 <span>
                   {uploaded[file.file.name] ? (
                     <svg
